@@ -1,0 +1,1067 @@
+zabbix_export:
+  version: '6.0'
+  date: '2025-02-05T12:00:00Z'
+  groups:
+    - uuid: ce20dc1ef49043f7aaeaf6226956add8
+      name: Templates
+  templates:
+    - uuid: 976bcfdad12f431eaddfdb8f061ffa76
+      template: Carbonio
+      name: 'Carbonio Mail Server (Ubuntu 24.04+)'
+      description: |
+        Template completo para monitorizar servidores Carbonio en Ubuntu 24.04+
+        
+        ## Descripción
+        En Ubuntu 24.04, zmcontrol ha sido reemplazado por systemctl.
+        Todos los servicios se gestionan mediante targets de systemd:
+        - carbonio-appserver.target
+        - carbonio-directory-server.target
+        - carbonio-mta.target
+        - carbonio-proxy.target
+        
+        ## Requisitos de instalación
+        1. Copiar userparameter_carbonio.conf a /etc/zabbix/zabbix_agent2.d/
+        2. Copiar scripts a /etc/zabbix/scripts/carbonio/
+        3. Dar permisos de ejecución: chmod +x /etc/zabbix/scripts/carbonio/*.sh
+        4. Configurar sudoers (ver documentación)
+        5. Reiniciar agente: systemctl restart zabbix-agent2
+        
+      groups:
+        - name: Templates
+      
+      macros:
+        - macro: '{$CARBONIO.MAILQ.WARN}'
+          value: '100'
+          description: 'Umbral de advertencia para cola de correo'
+        - macro: '{$CARBONIO.MAILQ.HIGH}'
+          value: '500'
+          description: 'Umbral alto para cola de correo'
+        - macro: '{$CARBONIO.MAILQ.CRIT}'
+          value: '1000'
+          description: 'Umbral crítico para cola de correo'
+
+      items:
+        # =========================================
+        # ESTADO DE SERVICIOS (SYSTEMCTL)
+        # =========================================
+        
+        - uuid: bc30a8d6da5e4ac3b7b632edcf110b63
+          name: 'Carbonio - Antivirus (ClamAV)'
+          key: carbonio.antivirus.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-antivirus.service (ClamAV)'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Security
+          triggers:
+            - uuid: aa1fc70778b744578b5868378eaade1f
+              expression: 'last(/Carbonio/carbonio.antivirus.status)<>0'
+              name: 'Carbonio: Servicio Antivirus no activo'
+              priority: HIGH
+
+        - uuid: dda94404adc340daa009116511ccd738
+          name: 'Carbonio - Freshclam'
+          key: carbonio.freshclam.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-freshclam.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Security
+          triggers:
+            - uuid: 46ce45f5ab544aea8b2106c3a67fabc6
+              expression: 'last(/Carbonio/carbonio.freshclam.status)<>0'
+              name: 'Carbonio: Servicio Freshclam no activo'
+              priority: AVERAGE
+
+        - uuid: b6c8e75d5d9b47fc9888e2faf61072be
+          name: 'Carbonio - Mail Threat (Amavis)'
+          key: carbonio.mailthreat.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-mailthreat.service (Amavis/SpamAssassin)'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Security
+          triggers:
+            - uuid: e6a71c10c0df434994b23a891475e345
+              expression: 'last(/Carbonio/carbonio.mailthreat.status)<>0'
+              name: 'Carbonio: Servicio Mail Threat no activo'
+              priority: HIGH
+
+        - uuid: 7f31a807bd6a45a0a65070ecc1ce42d1
+          name: 'Carbonio - PolicyD'
+          key: carbonio.policyd.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-policyd.service (CBPolicyD)'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Security
+          triggers:
+            - uuid: 6c40bf3ab4374871af34d366b934ca54
+              expression: 'last(/Carbonio/carbonio.policyd.status)<>0'
+              name: 'Carbonio: Servicio PolicyD no activo'
+              priority: AVERAGE
+
+        - uuid: f637c8eaac3a4d099da4aa587568018d
+          name: 'Carbonio - Configd'
+          key: carbonio.configd.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-configd.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Core
+          triggers:
+            - uuid: 90a4440a4bf74c0c8f7ee7a8acc1cb8b
+              expression: 'last(/Carbonio/carbonio.configd.status)<>0'
+              name: 'Carbonio: Servicio Configd no activo'
+              priority: HIGH
+
+        - uuid: 4e4c78e287824a76a867ad82a43f5996
+          name: 'Carbonio - Memcached'
+          key: carbonio.memcached.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-memcached.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Cache
+          triggers:
+            - uuid: 69596fff0aa34e9b817fb7551665d895
+              expression: 'last(/Carbonio/carbonio.memcached.status)<>0'
+              name: 'Carbonio: Servicio Memcached no activo'
+              priority: HIGH
+
+        - uuid: 00499d41120643ad8df9aeea4e91165c
+          name: 'Carbonio - Nginx'
+          key: carbonio.nginx.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-nginx.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Proxy
+          triggers:
+            - uuid: bbadc82f6f00476f9538da55363b21d7
+              expression: 'last(/Carbonio/carbonio.nginx.status)<>0'
+              name: 'Carbonio: Servicio Nginx no activo'
+              priority: DISASTER
+
+        - uuid: 9b5d32d5c3d74590b0ced52aa054a351
+          name: 'Carbonio - OpenDKIM'
+          key: carbonio.opendkim.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-opendkim.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: MTA
+          triggers:
+            - uuid: 316b8bc412974d1799761902a7543542
+              expression: 'last(/Carbonio/carbonio.opendkim.status)<>0'
+              name: 'Carbonio: Servicio OpenDKIM no activo'
+              priority: AVERAGE
+
+        - uuid: 2b1c9431f4234abe9ea6e1b7e727de4e
+          name: 'Carbonio - OpenLDAP'
+          key: carbonio.openldap.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-openldap.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Directory
+          triggers:
+            - uuid: f4320b4eb19c4232ae7c12339385555e
+              expression: 'last(/Carbonio/carbonio.openldap.status)<>0'
+              name: 'Carbonio: Servicio OpenLDAP no activo'
+              priority: DISASTER
+
+        - uuid: 9afe4fd12aea48b3b2a0ede141443b5f
+          name: 'Carbonio - Postfix'
+          key: carbonio.postfix.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-postfix.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: MTA
+          triggers:
+            - uuid: 10e8240cce52429c809ae03b99b4bf1a
+              expression: 'last(/Carbonio/carbonio.postfix.status)<>0'
+              name: 'Carbonio: Servicio Postfix no activo'
+              priority: DISASTER
+
+        - uuid: c9b108c61ee444e1a04d6bee7902b9f2
+          name: 'Carbonio - AppServer (Mailbox)'
+          key: carbonio.appserver.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-appserver.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Mailbox
+          triggers:
+            - uuid: 6a537ceb2b964be8afc760adbbe178be
+              expression: 'last(/Carbonio/carbonio.appserver.status)<>0'
+              name: 'Carbonio: Servicio AppServer no activo'
+              priority: DISASTER
+
+        - uuid: 68824de6041e4d0c9303e2c7ac2ec902
+          name: 'Carbonio - AppServer DB (MySQL)'
+          key: carbonio.appserverdb.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-appserver-db.service (MySQL)'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Database
+          triggers:
+            - uuid: 756aa8f08f8b4726a5da766d86c03e87
+              expression: 'last(/Carbonio/carbonio.appserverdb.status)<>0'
+              name: 'Carbonio: Servicio MySQL no activo'
+              priority: DISASTER
+
+        - uuid: 34f76c1e246b461fada99a2e7c0bdd20
+          name: 'Carbonio - Stats'
+          key: carbonio.stats.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del servicio carbonio-stats.service'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Monitoring
+          triggers:
+            - uuid: daf4689c5d714325b2c44c8ae21be28e
+              expression: 'last(/Carbonio/carbonio.stats.status)<>0'
+              name: 'Carbonio: Servicio Stats no activo'
+              priority: WARNING
+
+        # =========================================
+        # ESTADO DE TARGETS (SYSTEMCTL)
+        # =========================================
+
+        - uuid: 7b5565c62b9c445584e807c33db1a40c
+          name: 'Carbonio - Target MTA'
+          key: carbonio.target.mta.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del target carbonio-mta.target'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: MTA
+          triggers:
+            - uuid: 9d715e39d39e4527bd15edcc7117f600
+              expression: 'last(/Carbonio/carbonio.target.mta.status)<>0'
+              name: 'Carbonio: Target MTA no activo'
+              priority: DISASTER
+
+        - uuid: e5c91e6814b0477cbca417ca284efae6
+          name: 'Carbonio - Target Proxy'
+          key: carbonio.target.proxy.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del target carbonio-proxy.target'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Proxy
+          triggers:
+            - uuid: 5741dc26a7b0466ba10d01d0dad69fc4
+              expression: 'last(/Carbonio/carbonio.target.proxy.status)<>0'
+              name: 'Carbonio: Target Proxy no activo'
+              priority: DISASTER
+
+        - uuid: a9dd1f20f90044eea424046018d95a53
+          name: 'Carbonio - Target AppServer'
+          key: carbonio.target.appserver.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del target carbonio-appserver.target'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Mailbox
+          triggers:
+            - uuid: ce683afa555a42f68f78e608a13fdf40
+              expression: 'last(/Carbonio/carbonio.target.appserver.status)<>0'
+              name: 'Carbonio: Target AppServer no activo'
+              priority: DISASTER
+
+        - uuid: 61006899ff594541ae26774bd1c1b950
+          name: 'Carbonio - Target Directory Server'
+          key: carbonio.target.directory.status
+          delay: 2m
+          history: 90d
+          trends: '0'
+          value_type: UNSIGNED
+          description: 'Estado del target carbonio-directory-server.target'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Directory
+          triggers:
+            - uuid: 4fc1441ebd9e41828835ae40360afdb5
+              expression: 'last(/Carbonio/carbonio.target.directory.status)<>0'
+              name: 'Carbonio: Target Directory no activo'
+              priority: DISASTER
+
+        - uuid: cd7469e6e62c44bdbbe09cca64211289
+          name: 'Carbonio - Servicios activos'
+          key: carbonio.services.active
+          delay: 2m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número total de servicios Carbonio activos'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Overview
+
+        # =========================================
+        # COLAS DE CORREO (POSTFIX)
+        # =========================================
+
+        - uuid: 1eda7f76a0bb4095a45bcf4f55de5308
+          name: 'Carbonio - Cola de correo total'
+          key: carbonio.mailq.total
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número total de mensajes en todas las colas de Postfix'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: 'Mail Queue'
+          triggers:
+            - uuid: 2425a71a5444423cb0cc6e273c769894
+              expression: 'avg(/Carbonio/carbonio.mailq.total,5m)>{$CARBONIO.MAILQ.WARN}'
+              name: 'Carbonio: Cola de correo elevada (>{$CARBONIO.MAILQ.WARN})'
+              priority: WARNING
+            - uuid: 2eb00044854d4895b418d308e34e557e
+              expression: 'avg(/Carbonio/carbonio.mailq.total,5m)>{$CARBONIO.MAILQ.HIGH}'
+              name: 'Carbonio: Cola de correo alta (>{$CARBONIO.MAILQ.HIGH})'
+              priority: HIGH
+            - uuid: d463a31783064611bfb3a17bb4ac50af
+              expression: 'avg(/Carbonio/carbonio.mailq.total,5m)>{$CARBONIO.MAILQ.CRIT}'
+              name: 'Carbonio: Cola de correo crítica (>{$CARBONIO.MAILQ.CRIT})'
+              priority: DISASTER
+
+        - uuid: 336d640cd7214a1996d17a053797934c
+          name: 'Carbonio - Cola activa'
+          key: carbonio.mailq.active
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Mensajes en cola activa (listos para enviar)'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: 'Mail Queue'
+          triggers:
+            - uuid: d4c5d0fe1be44e01be6513b20de34bbb
+              expression: 'avg(/Carbonio/carbonio.mailq.active,5m)>50'
+              name: 'Carbonio: Envío inusual de correos detectado'
+              priority: HIGH
+
+        - uuid: 400240878cf045ff9e4c671e8d760b36
+          name: 'Carbonio - Cola diferida'
+          key: carbonio.mailq.deferred
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Mensajes diferidos (no pudieron entregarse, reintentando)'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: 'Mail Queue'
+          triggers:
+            - uuid: cfef5d5378c84ebe80a9b07486c2e62a
+              expression: 'avg(/Carbonio/carbonio.mailq.deferred,10m)>200'
+              name: 'Carbonio: Cola diferida alta - problemas de entrega'
+              priority: AVERAGE
+
+        - uuid: afdac4e656aa4785b27d1304bfdb0135
+          name: 'Carbonio - Cola en espera (hold)'
+          key: carbonio.mailq.hold
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Mensajes en espera (requieren intervención manual)'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: 'Mail Queue'
+          triggers:
+            - uuid: 6067f2f911884c1d8224e22ad49d096c
+              expression: 'last(/Carbonio/carbonio.mailq.hold)>10'
+              name: 'Carbonio: Mensajes en cola de espera'
+              priority: WARNING
+
+        - uuid: 1c1176b6922f4729858556fdc118bc0d
+          name: 'Carbonio - Cola corrupta'
+          key: carbonio.mailq.corrupt
+          delay: 5m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Mensajes corruptos o dañados'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: 'Mail Queue'
+          triggers:
+            - uuid: 987a00c23e114a7da5cc1b8af4741cdc
+              expression: 'last(/Carbonio/carbonio.mailq.corrupt)>0'
+              name: 'Carbonio: Mensajes corruptos en cola'
+              priority: AVERAGE
+
+        - uuid: 7dffb9dc8723467ab7d6314baabf8305
+          name: 'Carbonio - Cola entrante'
+          key: carbonio.mailq.incoming
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Mensajes en cola de entrada'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: 'Mail Queue'
+
+        # =========================================
+        # ESTADÍSTICAS DE CORREO
+        # =========================================
+
+        - uuid: 9c7d3dfeab6349b89831d634e8222093
+          name: 'Carbonio - Bytes enviados (diario)'
+          key: carbonio.mail.bytes.sent
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          units: B
+          description: 'Bytes de correo enviados en las últimas 24 horas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Statistics
+
+        - uuid: 0d05b89eac0f4d999b6c26bfb17c456a
+          name: 'Carbonio - Bytes recibidos (diario)'
+          key: carbonio.mail.bytes.received
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          units: B
+          description: 'Bytes de correo recibidos en las últimas 24 horas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Statistics
+
+        - uuid: a7aeaa5e08894d3c8eb1843acf4d35fd
+          name: 'Carbonio - Mensajes enviados (diario)'
+          key: carbonio.mail.sent
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de mensajes enviados en las últimas 24 horas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Statistics
+
+        - uuid: 57b4c06f3d324588a8a52c22227e0600
+          name: 'Carbonio - Mensajes recibidos (diario)'
+          key: carbonio.mail.received
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de mensajes recibidos en las últimas 24 horas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Statistics
+
+        - uuid: 24cb1a2f7f75489ba8ab677d6d0eef6a
+          name: 'Carbonio - Mensajes rechazados (diario)'
+          key: carbonio.mail.rejected
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de mensajes rechazados en las últimas 24 horas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Statistics
+
+        - uuid: 09e822c8197f45f58a7807bbe5876a99
+          name: 'Carbonio - Mensajes rebotados (diario)'
+          key: carbonio.mail.bounced
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de mensajes rebotados en las últimas 24 horas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Statistics
+
+        # =========================================
+        # ANTI-SPAM / RBL BLOCKS
+        # =========================================
+
+        - uuid: 7a651ba7cf854f9c8ff17d2116ab7efe
+          name: 'Carbonio - Bloqueos Spamhaus ZEN'
+          key: carbonio.rbl.spamhaus.zen
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Correos bloqueados por lista zen.spamhaus.org'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: AntiSpam
+
+        - uuid: a6e13a088ed8473380153567210f54c0
+          name: 'Carbonio - Bloqueos Spamhaus DBL'
+          key: carbonio.rbl.spamhaus.dbl
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Correos bloqueados por lista dbl.spamhaus.org'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: AntiSpam
+
+        - uuid: fb10021432b143729a5b7a8467daba0d
+          name: 'Carbonio - Bloqueos SpamCop'
+          key: carbonio.rbl.spamcop
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Correos bloqueados por lista bl.spamcop.net'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: AntiSpam
+
+        - uuid: 138e35ce57b7492d9a0e229a8e1ff855
+          name: 'Carbonio - Bloqueos Barracuda'
+          key: carbonio.rbl.barracuda
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Correos bloqueados por lista b.barracudacentral.org'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: AntiSpam
+
+        - uuid: 7f34c9d084b24727b4de9a06fdb87f67
+          name: 'Carbonio - Bloqueos PSBL'
+          key: carbonio.rbl.psbl
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Correos bloqueados por lista psbl.surriel.com'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: AntiSpam
+
+        - uuid: 472b94b7f8584f1f93b784bffe869396
+          name: 'Carbonio - Bloqueos reverso DNS'
+          key: carbonio.rbl.reverse.dns
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Correos bloqueados por inconsistencia en DNS reverso'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: AntiSpam
+
+        - uuid: eb25f518672748ff9e6a1259b66fc768
+          name: 'Carbonio - Rechazos HELO inválido'
+          key: carbonio.reject.helo.invalid
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Rechazos por comando HELO/EHLO inválido'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: AntiSpam
+
+        - uuid: 54e5cca74c43456e9bd94228d1076b15
+          name: 'Carbonio - Rechazos HELO host no encontrado'
+          key: carbonio.reject.helo.notfound
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Rechazos por HELO host not found'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: AntiSpam
+
+        # =========================================
+        # ESPACIO EN DISCO Y ALMACENAMIENTO
+        # =========================================
+
+        - uuid: 3bcf8f93755642eca67288666b9acbe9
+          name: 'Carbonio - Espacio usado store'
+          key: carbonio.store.used
+          delay: 10m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          units: B
+          description: 'Espacio utilizado en el almacén de buzones'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Storage
+
+        - uuid: a4b1139913354375a8224332e07e1fe0
+          name: 'Carbonio - Espacio libre store'
+          key: carbonio.store.free
+          delay: 10m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          units: B
+          description: 'Espacio libre en el almacén de buzones'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Storage
+          triggers:
+            - uuid: ebe5490d4d16474fb8c858b9f14a0692
+              expression: 'last(/Carbonio/carbonio.store.free)<10737418240'
+              name: 'Carbonio: Espacio en store bajo (<10GB)'
+              priority: HIGH
+            - uuid: 7fc308e55b244a38a3328e7dbbf41641
+              expression: 'last(/Carbonio/carbonio.store.free)<5368709120'
+              name: 'Carbonio: Espacio en store crítico (<5GB)'
+              priority: DISASTER
+
+        - uuid: e229b65875d14e97b9b18d7f5ddb740c
+          name: 'Carbonio - Porcentaje store usado'
+          key: carbonio.store.pused
+          delay: 10m
+          history: 90d
+          trends: 365d
+          value_type: FLOAT
+          units: '%'
+          description: 'Porcentaje de espacio utilizado en store'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Storage
+          triggers:
+            - uuid: 81ab0f6803a44a73a4bef5f59b7438a6
+              expression: 'last(/Carbonio/carbonio.store.pused)>85'
+              name: 'Carbonio: Store al {ITEM.LASTVALUE}%'
+              priority: WARNING
+            - uuid: 85fd69e668844f20b98831036b901af8
+              expression: 'last(/Carbonio/carbonio.store.pused)>95'
+              name: 'Carbonio: Store casi lleno ({ITEM.LASTVALUE}%)'
+              priority: DISASTER
+
+        # =========================================
+        # CONEXIONES Y RENDIMIENTO
+        # =========================================
+
+        - uuid: b32d531493e04c1c9d7e482dae7d563b
+          name: 'Carbonio - Conexiones IMAP'
+          key: carbonio.connections.imap
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de conexiones IMAP activas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Connections
+
+        - uuid: ac380852982c4639b4bbf70e50b30d18
+          name: 'Carbonio - Conexiones POP3'
+          key: carbonio.connections.pop3
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de conexiones POP3 activas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Connections
+
+        - uuid: 0144c2a0faaf42d7a813a21ac4bd97ad
+          name: 'Carbonio - Conexiones SMTP'
+          key: carbonio.connections.smtp
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de conexiones SMTP activas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Connections
+
+        - uuid: 22bbe3abaf6b45858aef704963c0c9ef
+          name: 'Carbonio - Conexiones HTTP/HTTPS'
+          key: carbonio.connections.http
+          delay: 1m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de conexiones HTTP/HTTPS activas (webmail)'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Connections
+
+        # =========================================
+        # CUENTAS Y BUZONES
+        # =========================================
+
+        - uuid: e8707884872844f2b4e227c68150dd81
+          name: 'Carbonio - Total cuentas'
+          key: carbonio.accounts.total
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número total de cuentas de correo'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Accounts
+
+        - uuid: daeff6bb1fae40678124d271fea37a4b
+          name: 'Carbonio - Cuentas activas'
+          key: carbonio.accounts.active
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número de cuentas activas'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Accounts
+
+        - uuid: b357eb957fd84896adc00023f21656e5
+          name: 'Carbonio - Total dominios'
+          key: carbonio.domains.total
+          delay: 1h
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          description: 'Número total de dominios'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Accounts
+
+        # =========================================
+        # VERSIÓN Y UPTIME
+        # =========================================
+
+        - uuid: 50cff3f6eb1246688344ff8216ea1a85
+          name: 'Carbonio - Versión'
+          key: carbonio.version
+          delay: 1d
+          history: 90d
+          trends: '0'
+          value_type: TEXT
+          description: 'Versión instalada de Carbonio'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Info
+
+        - uuid: d94407001f694538abdad8559652e567
+          name: 'Carbonio - Uptime AppServer'
+          key: carbonio.uptime.appserver
+          delay: 5m
+          history: 90d
+          trends: 365d
+          value_type: UNSIGNED
+          units: s
+          description: 'Tiempo de actividad del AppServer'
+          tags:
+            - tag: Application
+              value: Carbonio
+            - tag: Component
+              value: Info
+
+  # =========================================
+  # GRÁFICOS
+  # =========================================
+      
+  graphs:
+    - uuid: a1c4fafa37224e0f985e8cb170c7e98c
+      name: 'Carbonio - Cola de correo total'
+      graph_items:
+        - color: 1A7C11
+          item:
+            host: Carbonio
+            key: carbonio.mailq.total
+
+    - uuid: 8bb3520fbc8243a58d706a871938425b
+      name: 'Carbonio - Colas de correo detalladas'
+      show_triggers: 'NO'
+      graph_items:
+        - color: 1A7C11
+          item:
+            host: Carbonio
+            key: carbonio.mailq.active
+        - sortorder: '1'
+          color: FF0000
+          item:
+            host: Carbonio
+            key: carbonio.mailq.deferred
+        - sortorder: '2'
+          color: 26A69A
+          item:
+            host: Carbonio
+            key: carbonio.mailq.hold
+        - sortorder: '3'
+          color: 0040FF
+          item:
+            host: Carbonio
+            key: carbonio.mailq.incoming
+        - sortorder: '4'
+          color: '000000'
+          item:
+            host: Carbonio
+            key: carbonio.mailq.corrupt
+
+    - uuid: 7afffa7c1eb14274ad560b2ccef9ff55
+      name: 'Carbonio - Bloqueos Anti-Spam'
+      graph_items:
+        - color: 1A7C11
+          item:
+            host: Carbonio
+            key: carbonio.rbl.spamhaus.zen
+        - sortorder: '1'
+          color: F63100
+          item:
+            host: Carbonio
+            key: carbonio.rbl.spamhaus.dbl
+        - sortorder: '2'
+          color: 2774A4
+          item:
+            host: Carbonio
+            key: carbonio.rbl.spamcop
+        - sortorder: '3'
+          color: A54F10
+          item:
+            host: Carbonio
+            key: carbonio.rbl.barracuda
+        - sortorder: '4'
+          color: FC6EA3
+          item:
+            host: Carbonio
+            key: carbonio.rbl.psbl
+        - sortorder: '5'
+          color: 6C59DC
+          item:
+            host: Carbonio
+            key: carbonio.rbl.reverse.dns
+
+    - uuid: 57afeead03d34f1881f824814036f0d6
+      name: 'Carbonio - Tráfico de correo'
+      graph_items:
+        - color: 1A7C11
+          item:
+            host: Carbonio
+            key: carbonio.mail.bytes.sent
+        - sortorder: '1'
+          color: 0040FF
+          item:
+            host: Carbonio
+            key: carbonio.mail.bytes.received
+
+    - uuid: c8306c92a62f41268043183de26c2043
+      name: 'Carbonio - Mensajes enviados/recibidos'
+      graph_items:
+        - color: 1A7C11
+          item:
+            host: Carbonio
+            key: carbonio.mail.sent
+        - sortorder: '1'
+          color: 0040FF
+          item:
+            host: Carbonio
+            key: carbonio.mail.received
+        - sortorder: '2'
+          color: FF0000
+          item:
+            host: Carbonio
+            key: carbonio.mail.rejected
+        - sortorder: '3'
+          color: FFA500
+          item:
+            host: Carbonio
+            key: carbonio.mail.bounced
+
+    - uuid: b36cf311a2db44348aa1971899a2e7ed
+      name: 'Carbonio - Conexiones'
+      graph_items:
+        - color: 1A7C11
+          item:
+            host: Carbonio
+            key: carbonio.connections.imap
+        - sortorder: '1'
+          color: F63100
+          item:
+            host: Carbonio
+            key: carbonio.connections.pop3
+        - sortorder: '2'
+          color: 2774A4
+          item:
+            host: Carbonio
+            key: carbonio.connections.smtp
+        - sortorder: '3'
+          color: A54F10
+          item:
+            host: Carbonio
+            key: carbonio.connections.http
+
+    - uuid: 6e039e78bdbb4c6986cab2e7bc636c74
+      name: 'Carbonio - Espacio en store'
+      graph_items:
+        - color: 1A7C11
+          item:
+            host: Carbonio
+            key: carbonio.store.used
+        - sortorder: '1'
+          color: 0040FF
+          item:
+            host: Carbonio
+            key: carbonio.store.free
