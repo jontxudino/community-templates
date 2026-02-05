@@ -4,48 +4,32 @@
 # Ubicación: /etc/zabbix/scripts/carbonio/carbonio_uptime.sh
 # =============================================================================
 
-# Función para convertir tiempo de systemd a segundos
-systemd_uptime_to_seconds() {
+# Función para asegurar que devolvemos un número válido
+clean_number() {
+    local val="$1"
+    val=$(echo "$val" | tr -d '[:space:]')
+    if [ -z "$val" ] || [ "$val" = "" ]; then
+        echo 0
+    else
+        echo $((val + 0))
+    fi
+}
+
+# Función para obtener uptime usando fecha de inicio del servicio
+get_service_uptime() {
     local service=$1
-    local uptime_str
     
-    # Obtener la línea de Active desde systemctl status
-    uptime_str=$(systemctl status "$service" 2>/dev/null | grep "Active:" | grep -oP 'since.*;\s*\K[^;]+')
-    
-    if [ -z "$uptime_str" ]; then
+    # Verificar si el servicio está activo
+    if ! systemctl is-active "$service" >/dev/null 2>&1; then
         echo 0
         return
     fi
-    
-    # Extraer componentes de tiempo (formatos posibles: "1h 30min ago", "2 days 3h ago", etc.)
-    local days=0 hours=0 mins=0 secs=0
-    
-    if [[ "$uptime_str" =~ ([0-9]+)\ *day ]]; then
-        days=${BASH_REMATCH[1]}
-    fi
-    if [[ "$uptime_str" =~ ([0-9]+)\ *h ]]; then
-        hours=${BASH_REMATCH[1]}
-    fi
-    if [[ "$uptime_str" =~ ([0-9]+)\ *min ]]; then
-        mins=${BASH_REMATCH[1]}
-    fi
-    if [[ "$uptime_str" =~ ([0-9]+)\ *s ]]; then
-        secs=${BASH_REMATCH[1]}
-    fi
-    
-    # Calcular total en segundos
-    echo $(( days*86400 + hours*3600 + mins*60 + secs ))
-}
-
-# Función alternativa usando fecha de inicio del servicio
-get_service_uptime() {
-    local service=$1
     
     # Obtener el timestamp de inicio
     local start_time
     start_time=$(systemctl show "$service" --property=ActiveEnterTimestamp 2>/dev/null | cut -d'=' -f2)
     
-    if [ -z "$start_time" ] || [ "$start_time" = "n/a" ]; then
+    if [ -z "$start_time" ] || [ "$start_time" = "n/a" ] || [ "$start_time" = "" ]; then
         echo 0
         return
     fi
@@ -63,7 +47,8 @@ get_service_uptime() {
     local now_epoch
     now_epoch=$(date +%s)
     
-    echo $(( now_epoch - start_epoch ))
+    local diff=$((now_epoch - start_epoch))
+    clean_number "$diff"
 }
 
 case "$1" in

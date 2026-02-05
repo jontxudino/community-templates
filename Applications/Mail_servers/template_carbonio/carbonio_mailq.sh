@@ -9,11 +9,23 @@ POSTFIX_SPOOL="/opt/zextras/data/postfix/spool"
 MAILQ_CMD="/opt/zextras/common/sbin/mailq"
 POSTQUEUE_CMD="/opt/zextras/common/sbin/postqueue"
 
+# Función para asegurar que devolvemos un número válido
+clean_number() {
+    local val="$1"
+    val=$(echo "$val" | tr -d '[:space:]')
+    if [ -z "$val" ] || [ "$val" = "" ]; then
+        echo 0
+    else
+        echo $((val + 0))
+    fi
+}
+
 case "$1" in
     total)
         # Total de mensajes en cola
         if [ -x "$MAILQ_CMD" ]; then
-            $MAILQ_CMD 2>/dev/null | grep -v "Mail queue is empty" | grep -c '^[0-9A-F]' || echo 0
+            result=$($MAILQ_CMD 2>/dev/null | grep -v "Mail queue is empty" | grep -c '^[0-9A-F]')
+            clean_number "$result"
         else
             echo 0
         fi
@@ -22,21 +34,18 @@ case "$1" in
     active)
         # Mensajes activos (en proceso de envío)
         if [ -d "$POSTFIX_SPOOL/active" ]; then
-            find "$POSTFIX_SPOOL/active" -type f 2>/dev/null | wc -l
+            result=$(find "$POSTFIX_SPOOL/active" -type f 2>/dev/null | wc -l)
+            clean_number "$result"
         else
-            # Alternativa: contar en output de postqueue
-            if [ -x "$POSTQUEUE_CMD" ]; then
-                $POSTQUEUE_CMD -p 2>/dev/null | grep -c "^\*" || echo 0
-            else
-                echo 0
-            fi
+            echo 0
         fi
         ;;
     
     deferred)
         # Mensajes diferidos (reintentando)
         if [ -d "$POSTFIX_SPOOL/deferred" ]; then
-            find "$POSTFIX_SPOOL/deferred" -type f 2>/dev/null | wc -l
+            result=$(find "$POSTFIX_SPOOL/deferred" -type f 2>/dev/null | wc -l)
+            clean_number "$result"
         else
             echo 0
         fi
@@ -45,7 +54,8 @@ case "$1" in
     hold)
         # Mensajes en espera (requieren intervención)
         if [ -d "$POSTFIX_SPOOL/hold" ]; then
-            find "$POSTFIX_SPOOL/hold" -type f 2>/dev/null | wc -l
+            result=$(find "$POSTFIX_SPOOL/hold" -type f 2>/dev/null | wc -l)
+            clean_number "$result"
         else
             echo 0
         fi
@@ -54,7 +64,8 @@ case "$1" in
     corrupt)
         # Mensajes corruptos
         if [ -d "$POSTFIX_SPOOL/corrupt" ]; then
-            find "$POSTFIX_SPOOL/corrupt" -type f 2>/dev/null | wc -l
+            result=$(find "$POSTFIX_SPOOL/corrupt" -type f 2>/dev/null | wc -l)
+            clean_number "$result"
         else
             echo 0
         fi
@@ -63,7 +74,8 @@ case "$1" in
     incoming)
         # Mensajes entrantes
         if [ -d "$POSTFIX_SPOOL/incoming" ]; then
-            find "$POSTFIX_SPOOL/incoming" -type f 2>/dev/null | wc -l
+            result=$(find "$POSTFIX_SPOOL/incoming" -type f 2>/dev/null | wc -l)
+            clean_number "$result"
         else
             echo 0
         fi
@@ -72,7 +84,8 @@ case "$1" in
     maildrop)
         # Mensajes locales pendientes
         if [ -d "$POSTFIX_SPOOL/maildrop" ]; then
-            find "$POSTFIX_SPOOL/maildrop" -type f 2>/dev/null | wc -l
+            result=$(find "$POSTFIX_SPOOL/maildrop" -type f 2>/dev/null | wc -l)
+            clean_number "$result"
         else
             echo 0
         fi
