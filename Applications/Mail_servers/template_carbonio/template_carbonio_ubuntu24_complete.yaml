@@ -46,7 +46,7 @@ zabbix_export:
         # =========================================
         
         - uuid: bc30a8d6da5e4ac3b7b632edcf110b63
-          name: 'Carbonio - Antivirus (ClamAV)'
+          name: 'Carbonio - Servicio Antivirus (ClamAV)'
           key: carbonio.antivirus.status
           delay: 2m
           history: 90d
@@ -65,7 +65,7 @@ zabbix_export:
               priority: HIGH
 
         - uuid: dda94404adc340daa009116511ccd738
-          name: 'Carbonio - Freshclam'
+          name: 'Carbonio - Servicio Freshclam'
           key: carbonio.freshclam.status
           delay: 2m
           history: 90d
@@ -84,7 +84,7 @@ zabbix_export:
               priority: AVERAGE
 
         - uuid: b6c8e75d5d9b47fc9888e2faf61072be
-          name: 'Carbonio - Mail Threat (Amavis)'
+          name: 'Carbonio - Servicio Mail Threat (Amavis)'
           key: carbonio.mailthreat.status
           delay: 2m
           history: 90d
@@ -103,7 +103,7 @@ zabbix_export:
               priority: HIGH
 
         - uuid: 7f31a807bd6a45a0a65070ecc1ce42d1
-          name: 'Carbonio - PolicyD'
+          name: 'Carbonio - Servicio PolicyD'
           key: carbonio.policyd.status
           delay: 2m
           history: 90d
@@ -122,7 +122,7 @@ zabbix_export:
               priority: AVERAGE
 
         - uuid: f637c8eaac3a4d099da4aa587568018d
-          name: 'Carbonio - Configd'
+          name: 'Carbonio - Servicio Configd'
           key: carbonio.configd.status
           delay: 2m
           history: 90d
@@ -141,7 +141,7 @@ zabbix_export:
               priority: HIGH
 
         - uuid: 4e4c78e287824a76a867ad82a43f5996
-          name: 'Carbonio - Memcached'
+          name: 'Carbonio - Servicio Memcached'
           key: carbonio.memcached.status
           delay: 2m
           history: 90d
@@ -160,7 +160,7 @@ zabbix_export:
               priority: HIGH
 
         - uuid: 00499d41120643ad8df9aeea4e91165c
-          name: 'Carbonio - Nginx'
+          name: 'Carbonio - Servicio Nginx'
           key: carbonio.nginx.status
           delay: 2m
           history: 90d
@@ -179,7 +179,7 @@ zabbix_export:
               priority: DISASTER
 
         - uuid: 9b5d32d5c3d74590b0ced52aa054a351
-          name: 'Carbonio - OpenDKIM'
+          name: 'Carbonio - Servicio OpenDKIM'
           key: carbonio.opendkim.status
           delay: 2m
           history: 90d
@@ -198,7 +198,7 @@ zabbix_export:
               priority: AVERAGE
 
         - uuid: 2b1c9431f4234abe9ea6e1b7e727de4e
-          name: 'Carbonio - OpenLDAP'
+          name: 'Carbonio - Servicio OpenLDAP'
           key: carbonio.openldap.status
           delay: 2m
           history: 90d
@@ -217,7 +217,7 @@ zabbix_export:
               priority: DISASTER
 
         - uuid: 9afe4fd12aea48b3b2a0ede141443b5f
-          name: 'Carbonio - Postfix'
+          name: 'Carbonio - Servicio Postfix'
           key: carbonio.postfix.status
           delay: 2m
           history: 90d
@@ -236,7 +236,7 @@ zabbix_export:
               priority: DISASTER
 
         - uuid: c9b108c61ee444e1a04d6bee7902b9f2
-          name: 'Carbonio - AppServer (Mailbox)'
+          name: 'Carbonio - Servicio AppServer (Mailbox)'
           key: carbonio.appserver.status
           delay: 2m
           history: 90d
@@ -255,7 +255,7 @@ zabbix_export:
               priority: DISASTER
 
         - uuid: 68824de6041e4d0c9303e2c7ac2ec902
-          name: 'Carbonio - AppServer DB (MySQL)'
+          name: 'Carbonio - Servicio AppServer DB (MySQL)'
           key: carbonio.appserverdb.status
           delay: 2m
           history: 90d
@@ -274,7 +274,7 @@ zabbix_export:
               priority: DISASTER
 
         - uuid: 34f76c1e246b461fada99a2e7c0bdd20
-          name: 'Carbonio - Stats'
+          name: 'Carbonio - Servicio Stats'
           key: carbonio.stats.status
           delay: 2m
           history: 90d
